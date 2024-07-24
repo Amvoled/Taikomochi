@@ -6,6 +6,13 @@
 
 --- VERSION 0.2.0 / Updated on 2024/02/27 19:00 UTC
 
+SMODS.Atlas { -- modicon by cerloCasa
+	key = 'modicon',
+	px = 34,
+	py = 34,
+	path = 'modicon.png',
+}
+
 function SMODS.INIT.Taikomochi()
 	-- Mod init
 end
