@@ -13,10 +13,6 @@ SMODS.Atlas { -- modicon by cerloCasa
 	path = 'modicon.png',
 }
 
-function SMODS.INIT.Taikomochi()
-	-- Mod init
-end
-
 -------------------
 -- UI Injections --
 -------------------
