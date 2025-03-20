@@ -59,10 +59,7 @@ end
 -- Callback for the start run button, adds the value of the zen mode checkbox to the game args
 local _old_start_run_callback = G.FUNCS.start_run
 G.FUNCS.start_run = function(e, args)
-	if G.SETTINGS.current_setup == 'New Run' then
-		local _zen = G.run_zen_mode
-		args.zen = _zen
-	end
+	if G.SETTINGS.current_setup == 'New Run' then args.zen = G.run_zen_mode end
 	_old_start_run_callback(e, args)
 end
 
@@ -113,8 +110,9 @@ function create_UIBox_game_over()
 	local button_list = gameover_textbox.nodes[2].nodes[1].nodes[2]
 	table.insert(button_list.nodes, 1, 
 		{n=G.UIT.R, 
-		 config={align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, 
-				 button = "zen_restart_ante", shadow = true, focus_args = {nav = 'wide', snap_to = true}},
+		 config={align = "cm", minw = 5, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE,
+			 id = 'zen_restart_ante', button = "zen_restart_ante", shadow = true,
+			 focus_args = {nav = 'wide', snap_to = true}},
 		 nodes={{n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, maxw = 4.8}, 
 		         nodes={{n=G.UIT.T, config={text = "Retry Ante", scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
                }}}})
@@ -128,9 +126,17 @@ end
 -- Game Logic Injections --
 ---------------------------
 
+local _old_start_setup_run = G.FUNCS.start_setup_run
+G.FUNCS.start_setup_run = function(e)
+	-- if we're initialising a new run without a menu (by resetting with `r`)
+	-- always match the previous run's zen mode flag
+	if not G.OVERLAY_MENU then G.run_zen_mode = G.GAME.zen end
+	return _old_start_setup_run(e)
+end
 -- Add a "zen" bool to true when we start a run
 local _old_game_start_run = Game.start_run
 function Game:start_run(args)
+	G.GAME.zen = nil -- clear the previous run's zen flag :)
 	if not args.zen then _old_game_start_run(self, args) return end  -- If not in zen mode, just ignore this function
 	-- We dynamically monkeypatch the initialization function
 	local _old_init_game_object = Game.init_game_object -- Reference value for the original game values initialization function
@@ -146,6 +152,7 @@ end
 
 -- This function is just everything I found in the code to reset an ante. I probably forgot some things, but it seems to work
 function Game:zen_restart_ante()
+	G.run_zen_mode = true
 	G.GAME.chips = 0  -- Set chips to zero
     if self.GAME_OVER_UI then self.GAME_OVER_UI:remove(); self.GAME_OVER_UI = nil end  -- Delete what's left of the game over UI just in case
 	G.GAME.blind:defeat(true)  -- We have to "defeat" the blind to clear the top of the siedebar
